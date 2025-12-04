@@ -1,0 +1,16 @@
+{
+  "success": true,
+  "message": "크롤링 완료",
+  "results": [
+    {
+      "source": "MSIT",
+      "success": false,
+      "message": "'list' object has no attribute 'get'"
+    },
+    {
+      "source": "KSTARTUP",
+      "success": false,
+      "message": "(sqlite3.OperationalError) table government_supports has no column named category\n[SQL: INSERT INTO government_supports (source_api, title, organization, category, support_type, target_audience, application_start_date, application_end_date, description, budget, contact_info, url, is_new, first_crawled_at, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id]\n[parameters: ('KSTARTUP', 'MATLAB/SIMULINK를 활용한 전력시뮬레이션 기본교육 안내', '한국전기산업진흥회 에너지밸리기업개발원', None, None, None, None, None, None, None, None, 'https://www.k-startup.go.kr/web/contents/bizpbanc-ongoing.do?schM=view&pbancSn=175671', 1, '2025-12-02 15:12:41.815253', '2025-12-02 15:12:41.848366', '2025-12-02 15:12:41.848366')]\n(Background on this error at: https://sqlalche.me/e/20/e3q8)"
+    }
+  ]
+}

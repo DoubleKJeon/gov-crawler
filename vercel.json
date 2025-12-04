@@ -1,0 +1,42 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "api/*.py",
+      "use": "@vercel/python"
+    },
+    {
+      "src": "frontend/**",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/crawler",
+      "dest": "/api/crawler.py"
+    },
+    {
+      "src": "/api/supports",
+      "dest": "/api/supports.py"
+    },
+    {
+      "src": "/api/stats",
+      "dest": "/api/stats.py"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/frontend/$1"
+    }
+  ],
+  "crons": [
+    {
+      "path": "/api/crawler",
+      "schedule": "0 8 * * *"
+    }
+  ],
+  "env": {
+    "DATABASE_URL": "@database_url",
+    "MSIT_API_KEY": "@msit_api_key",
+    "KSTARTUP_API_KEY": "@kstartup_api_key"
+  }
+}

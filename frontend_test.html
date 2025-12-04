@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>정부지원사업 데일리 - 매일 업데이트되는 지원사업 정보</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <h1>📰 정부지원사업 데일리</h1>
+                </div>
+                <div class="header-date" id="currentDate"></div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Stats Banner -->
+    <section class="stats-banner">
+        <div class="container">
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-value" id="newCount">-</div>
+                    <div class="stat-label">오늘 신규</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="ongoingCount">-</div>
+                    <div class="stat-label">진행중</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="urgentCount">-</div>
+                    <div class="stat-label">마감임박</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="totalCount">-</div>
+                    <div class="stat-label">전체 공고</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
+            <!-- New Announcements Section -->
+            <section class="section">
+                <div class="section-header">
+                    <h2>🔥 오늘의 신규 공고</h2>
+                    <span class="badge badge-new" id="newBadge">NEW</span>
+                </div>
+                <div class="announcements-grid" id="newAnnouncements">
+                    <!-- 로딩 중 -->
+                    <div class="loading">데이터를 불러오는 중...</div>
+                </div>
+            </section>
+
+            <!-- Ongoing Announcements Section -->
+            <section class="section">
+                <div class="section-header">
+                    <h2>📌 진행중인 공고</h2>
+                    <button class="btn-secondary" onclick="loadMore()">더보기</button>
+                </div>
+                <div class="announcements-grid" id="ongoingAnnouncements">
+                    <div class="loading">데이터를 불러오는 중...</div>
+                </div>
+            </section>
+
+            <!-- Urgent Deadline Section -->
+            <section class="section">
+                <div class="section-header">
+                    <h2>⏰ 마감 임박 (7일 이내)</h2>
+                </div>
+                <div class="urgent-list" id="urgentList">
+                    <div class="loading">데이터를 불러오는 중...</div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>매일 아침 8시 업데이트 | API 연동 완료</p>
+            <p class="footer-links">
+                <a href="http://localhost:8000/docs" target="_blank">API 문서</a> |
+                <a href="#" onclick="alert('알림 설정 기능 준비중입니다!')">관심분야 설정</a>
+            </p>
+        </div>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>

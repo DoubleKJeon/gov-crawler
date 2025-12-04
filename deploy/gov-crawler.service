@@ -1,0 +1,15 @@
+[Unit]
+Description=Government Support Crawler API
+After=network.target
+
+[Service]
+Type=simple
+User=YOUR_USERNAME
+WorkingDirectory=/home/YOUR_USERNAME/Project4_정부지원사업_크롤러
+Environment="PATH=/home/YOUR_USERNAME/Project4_정부지원사업_크롤러/venv/bin"
+ExecStart=/home/YOUR_USERNAME/Project4_정부지원사업_크롤러/venv/bin/python -m app.main
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

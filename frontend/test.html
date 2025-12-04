@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API 연결 테스트</title>
+</head>
+
+<body>
+    <h1>API 연결 테스트</h1>
+    <button onclick="testAPI()">API 테스트 실행</button>
+    <pre id="result"></pre>
+
+    <script>
+        async function testAPI() {
+            const result = document.getElementById('result');
+            result.textContent = '테스트 중...\n\n';
+
+            try {
+                // 1. 통계 API
+                result.textContent += '1. 통계 API 호출 중...\n';
+                const statsRes = await fetch('http://localhost:8000/api/stats');
+                const stats = await statsRes.json();
+                result.textContent += `   상태: ${statsRes.status}\n`;
+                result.textContent += `   전체: ${stats.total_supports}개\n`;
+                result.textContent += `   신규: ${stats.new_supports}개\n\n`;
+
+                // 2. 공고 API
+                result.textContent += '2. 공고 API 호출 중...\n';
+                const supportsRes = await fetch('http://localhost:8000/api/supports?page=1&size=3');
+                const supports = await supportsRes.json();
+                result.textContent += `   상태: ${supportsRes.status}\n`;
+                result.textContent += `   전체: ${supports.total}개\n`;
+                result.textContent += `   아이템: ${supports.items.length}개\n\n`;
+
+                if (supports.items.length > 0) {
+                    result.textContent += '   첫 공고:\n';
+                    result.textContent += `   - 제목: ${supports.items[0].title}\n`;
+                    result.textContent += `   - 소스: ${supports.items[0].source_api}\n`;
+                }
+
+                result.textContent += '\n✅ 테스트 완료!';
+            } catch (error) {
+                result.textContent += `\n❌ 오류: ${error.message}\n`;
+                result.textContent += '\nCORS 에러일 가능성이 높습니다.\n';
+                result.textContent += '브라우저 콘솔(F12)을 확인하세요.';
+            }
+        }
+
+        // 자동 실행
+        window.onload = () => testAPI();
+    </script>
+</body>
+
+</html>
