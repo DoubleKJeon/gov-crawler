@@ -1,66 +1,35 @@
 """
-Crawler API - Vercel Serverless Function
+Crawler API - Vercel Serverless Handler
 POST /api/crawler
 """
+from http.server import BaseHTTPRequestHandler
+import json
 import os
 import requests
+from sqlalchemy import create_engine, Column, Integer, String, DateTime
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
 from datetime import datetime
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-from ._db import SessionLocal, GovernmentSupport
 
-app = FastAPI()
+# DB 설정
+DATABASE_URL = os.environ.get("DATABASE_URL", "")
+Base = declarative_base()
 
-# CORS
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+class GovernmentSupport(Base):
+    __tablename__ = "government_supports"
+    id = Column(Integer, primary_key=True)
+    source_api = Column(String(20))
+    title = Column(String(500))
+    organization = Column(String(200))
+    url = Column(String(1000), unique=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
 
-def crawl_msit():
-    """과기부 크롤링"""
-    result = {"source": "MSIT", "success": False, "fetched": 0, "saved": 0}
-    try:
-        api_key = os.environ.get("MSIT_API_KEY")
-        url = "http://apis.data.go.kr/1721000/msitannouncementinfo/businessAnnouncMentList"
-        params = {
-            "serviceKey": api_key,
-            "numOfRows": 100,
-            "pageNo": 1,
-            "returnType": "json"
-        }
-        
-        response = requests.get(url, params=params, timeout=30)
-        if response.status_code == 200:
-            data = response.json()
-            if "response" in data:
-                body = data["response"].get("body", {})
-                items_wrapper = body.get("items", {})
-                if "item" in items_wrapper:
-                    items = items_wrapper["item"]
-                    if isinstance(items, dict):
-                        items = [items]
-                    
-                    result["fetched"] = len(items)
-                    session = SessionLocal()
-                    for item in items:
-                        support = GovernmentSupport(
-                            source_api="MSIT",
-                            title=item.get("subject", ""),
-                            organization=item.get("deptName", ""),
-                            url=item.get("viewUrl", "")
-                        )
-                        session.add(support)
-                        result["saved"] += 1
-                    session.commit()
-                    session.close()
-                    result["success"] = True
-    except Exception as e:
-        result["message"] = str(e)
-    return result
+if DATABASE_URL:
+    engine = create_engine(DATABASE_URL)
+    SessionLocal = sessionmaker(bind=engine)
+else:
+    engine = create_engine("sqlite:///./gov_support.db")
+    SessionLocal = sessionmaker(bind=engine)
 
 def crawl_kstartup():
     """K-Startup 크롤링"""
@@ -99,59 +68,35 @@ def crawl_kstartup():
         result["message"] = str(e)
     return result
 
-def crawl_sme():
-    """기업마당 크롤링"""
-    result = {"source": "SME", "success": False, "fetched": 0, "saved": 0}
-    try:
-        api_key = os.environ.get("KSTARTUP_API_KEY")
-        url = "https://apis.data.go.kr/B553530/sme/getList"
-        params = {
-            "ServiceKey": api_key,
-            "numOfRows": 100,
-            "pageNo": 1,
-            "type": "json"
-        }
-        
-        response = requests.get(url, params=params, timeout=30)
-        if response.status_code == 200:
-            data = response.json()
-            if "response" in data:
-                body = data["response"].get("body", {})
-                items_wrapper = body.get("items", {})
-                if "item" in items_wrapper:
-                    items = items_wrapper["item"]
-                    if isinstance(items, dict):
-                        items = [items]
-                    
-                    result["fetched"] = len(items)
-                    session = SessionLocal()
-                    for item in items:
-                        support = GovernmentSupport(
-                            source_api="SME",
-                            title=item.get("title", ""),
-                            organization=item.get("orgName", ""),
-                            url=item.get("url", "")
-                        )
-                        session.add(support)
-                        result["saved"] += 1
-                    session.commit()
-                    session.close()
-                    result["success"] = True
-    except Exception as e:
-        result["message"] = str(e)
-    return result
-
-@app.post("/api/crawler")
-def run_crawler():
-    """크롤러 실행 (MSIT + K-Startup + SME)"""
-    results = []
-    results.append(crawl_msit())
-    results.append(crawl_kstartup())
-    results.append(crawl_sme())
+class handler(BaseHTTPRequestHandler):
+    def do_POST(self):
+        try:
+            # K-Startup만 크롤링 (가장 안정적)
+            results = [crawl_kstartup()]
+            
+            total_saved = sum(r.get("saved", 0) for r in results)
+            response_data = {
+                "success": True,
+                "message": f"크롤링 완료: {total_saved}개 저장",
+                "results": results
+            }
+            
+            self.send_response(200)
+            self.send_header('Content-type', 'application/json')
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.end_headers()
+            self.wfile.write(json.dumps(response_data).encode())
+            
+        except Exception as e:
+            self.send_response(500)
+            self.send_header('Content-type', 'application/json')
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.end_headers()
+            self.wfile.write(json.dumps({"error": str(e)}).encode())
     
-    total_saved = sum(r.get("saved", 0) for r in results)
-    return {
-        "success": True,
-        "message": f"크롤링 완료: {total_saved}개 저장",
-        "results": results
-    }
+    def do_OPTIONS(self):
+        self.send_response(200)
+        self.send_header('Access-Control-Allow-Origin', '*')
+        self.send_header('Access-Control-Allow-Methods', 'POST, OPTIONS')
+        self.send_header('Access-Control-Allow-Headers', '*')
+        self.end_headers()
